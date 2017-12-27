@@ -5,10 +5,12 @@
 #include "stdafx.h"
 #include <vector>
 
+void triangle_Vdots(CPoint start, CPoint end, CPoint &top, CPoint &left, CPoint &right);
+
 class MyShape {
 public:
 	MyShape() { }
-	virtual void drawMe() = 0;
+	virtual void drawMe(CDC *) = 0;
 	virtual ~MyShape() { }
 };
 
@@ -21,7 +23,7 @@ public:
 		this->y2 = y2;
 	}
 
-	void drewMe(CDC *dc) {
+	void drawMe(CDC *dc) {
 		dc->MoveTo(x1, y1);
 		dc->LineTo(x2, y2);
 	}
@@ -38,7 +40,7 @@ public:
 		this->y2 = y2;
 	}
 
-	void drewMe(CDC *dc) {
+	void drawMe(CDC *dc) {
 		dc->Ellipse(x1,y1,x2,y2);
 	}
 private:
@@ -54,7 +56,7 @@ public:
 		this->y2 = y2;
 	}
 
-	void drewMe(CDC *dc) {
+	void drawMe(CDC *dc) {
 		CPoint top, left, right;
 		if (x1 < x2) {
 			top.x = x1 + (x2 - x1) / 2;
@@ -96,7 +98,7 @@ public:
 		this->y2 = y2;
 	}
 
-	void drewMe(CDC *dc) {
+	void drawMe(CDC *dc) {
 		dc->Rectangle(x1, y1, x2, y2);
 	}
 private:
@@ -111,7 +113,7 @@ public:
 		this->size = size;
 	}
 
-	void drewMe(CDC *dc) {
+	void drawMe(CDC *dc) {
 		dc->MoveTo(dots[0]);
 		for (int i = 1;i < size;i++) {
 			dc->LineTo(dots[i]);
