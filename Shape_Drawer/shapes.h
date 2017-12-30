@@ -3,7 +3,9 @@
 #pragma once
 
 #include "stdafx.h"
+#include <iostream>
 #include <vector>
+using namespace std;
 
 void triangle_Vdots(CPoint start, CPoint end, CPoint &top, CPoint &left, CPoint &right);
 
@@ -12,11 +14,13 @@ public:
 	MyShape() { }
 	virtual void drawMe(CDC *) = 0;
 	virtual ~MyShape() { }
+private:
+	DWORD color;
 };
 
 class MyLine : public MyShape {
 public:
-	MyLine(int x1, int y1, int x2, int y2) {
+	MyLine(int x1, int y1, int x2, int y2, DWORD color) {
 		this->x1 = x1;
 		this->x2 = x2;
 		this->y1 = y1;
@@ -33,7 +37,7 @@ private:
 
 class MyEllipse : public MyShape {
 public:
-	MyEllipse(int x1, int y1, int x2, int y2) {
+	MyEllipse(int x1, int y1, int x2, int y2, DWORD color) {
 		this->x1 = x1;
 		this->x2 = x2;
 		this->y1 = y1;
@@ -49,7 +53,7 @@ private:
 
 class MyTriangle : public MyShape {
 public:
-	MyTriangle(int x1, int y1, int x2, int y2) {
+	MyTriangle(int x1, int y1, int x2, int y2, DWORD color) {
 		this->x1 = x1;
 		this->x2 = x2;
 		this->y1 = y1;
@@ -91,7 +95,7 @@ private:
 
 class MyRectangle : public MyShape {
 public:
-	MyRectangle(int x1, int y1, int x2, int y2) {
+	MyRectangle(int x1, int y1, int x2, int y2, DWORD color) {
 		this->x1 = x1;
 		this->x2 = x2;
 		this->y1 = y1;
@@ -107,10 +111,12 @@ private:
 
 class MyPolygon : public MyShape {
 public:
-	MyPolygon(int size, CPoint *dotsA) {
-		for (int i = 0;i < size;i++)
-			dots[i] = dotsA[i];
-		this->size = size;
+	MyPolygon(vector<CPoint> dotsA, DWORD color) {
+		dots = dotsA;
+		size = dots.size();
+	}
+	~MyPolygon() {
+		dots.clear();
 	}
 
 	void drawMe(CDC *dc) {
@@ -121,28 +127,9 @@ public:
 		dc->LineTo(dots[0]);
 	}
 private:
-	CPoint dots[50];
+	vector<CPoint> dots;
 	int size;
 };
-
-
-
-void triangle_Vdots(CPoint start, CPoint end, CPoint &top, CPoint &left, CPoint &right) {
-	if (start.x < end.x) {
-		top.x = start.x + (end.x - start.x) / 2;
-		left.x = start.x;
-		right.x = end.x;
-	}
-	else {
-		top.x = end.x + (start.x - end.x) / 2;
-		left.x = end.x;
-		right.x = start.x;
-	}
-
-	top.y = end.y;
-	left.y = start.y;
-	right.y = start.y;
-}
 
 
 #endif
