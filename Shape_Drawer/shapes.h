@@ -11,123 +11,157 @@ void triangle_Vdots(CPoint start, CPoint end, CPoint &top, CPoint &left, CPoint 
 
 class MyShape {
 public:
-	MyShape() { }
-	virtual void drawMe(CDC *) = 0;
-	virtual ~MyShape() { }
-private:
-	DWORD color;
+	MyShape() {
+		dots.clear();
+		color = RGB(0, 0, 0);
+	}
+	virtual void drawMe(CDC *) const = 0;
+	virtual ~MyShape() {
+		dots.clear();
+	}
+
+	virtual DWORD getColor() const{
+		return color;
+	}
+protected:
+	vector<CPoint> dots;
+	COLORREF color;
 };
 
 class MyLine : public MyShape {
 public:
-	MyLine(int x1, int y1, int x2, int y2, DWORD color) {
-		this->x1 = x1;
-		this->x2 = x2;
-		this->y1 = y1;
-		this->y2 = y2;
+	MyLine(CPoint startP, CPoint endP, COLORREF color) {
+		dots.push_back(startP);
+		dots.push_back(endP);
+		this->color = color;
 	}
 
-	void drawMe(CDC *dc) {
-		dc->MoveTo(x1, y1);
-		dc->LineTo(x2, y2);
+	void drawMe(CDC *dc) const {
+		COLORREF oldPen;
+		dc->SelectObject(GetStockObject(DC_PEN));
+		oldPen = dc->SetDCPenColor(color);
+
+		dc->MoveTo(dots[0]);
+		dc->LineTo(dots[1]);
+
+		dc->SetDCPenColor(oldPen);
 	}
-private:
-	int x1, x2, y1, y2;
 };
 
 class MyEllipse : public MyShape {
 public:
-	MyEllipse(int x1, int y1, int x2, int y2, DWORD color) {
-		this->x1 = x1;
-		this->x2 = x2;
-		this->y1 = y1;
-		this->y2 = y2;
+	MyEllipse(CPoint startP, CPoint endP, COLORREF color) {
+		dots.push_back(startP);
+		dots.push_back(endP);
+		this->color = color;
 	}
 
-	void drawMe(CDC *dc) {
-		dc->Ellipse(x1,y1,x2,y2);
+	void drawMe(CDC *dc) const {
+		COLORREF oldPen, oldBrush;
+
+		dc->SelectObject(GetStockObject(DC_BRUSH));
+		dc->SelectObject(GetStockObject(DC_PEN));
+
+		oldBrush = dc->SetDCBrushColor(color);
+		oldPen = dc->SetDCPenColor(color);
+
+		dc->Ellipse(dots[0].x, dots[0].y, dots[1].x, dots[1].y);
+
+		dc->SetDCBrushColor(oldBrush);
+		dc->SetDCPenColor(oldPen);
 	}
-private:
-	int x1, x2, y1, y2;
 };
 
 class MyTriangle : public MyShape {
 public:
-	MyTriangle(int x1, int y1, int x2, int y2, DWORD color) {
-		this->x1 = x1;
-		this->x2 = x2;
-		this->y1 = y1;
-		this->y2 = y2;
+	MyTriangle(CPoint startP, CPoint endP, COLORREF color) {
+		dots.push_back(startP);
+		dots.push_back(endP);
+		this->color = color;
 	}
 
-	void drawMe(CDC *dc) {
-		CPoint top, left, right;
-		if (x1 < x2) {
-			top.x = x1 + (x2 - x1) / 2;
-			left.x = x1;
-			right.x = x2;
-		}
-		else {
-			top.x = x2 + (x1 - x2) / 2;
-			left.x = x2;
-			right.x = x1;
-		}
+	void drawMe(CDC *dc) const {
+		CPoint points[3]; //0 - top, 1 - left, 2 - right
+		CPoint startP, endP;
+		startP = dots[0];
+		endP = dots[1];
 
-		if (y1 < y2) {
-			top.y = y1;
-			left.y = y2;
-			right.y = y2;
-		}
-		else {
-			top.y = y2;
-			left.y = y1;
-			right.y = y1;
-		}
+		triangle_Vdots(startP, endP, points[0], points[1], points[2]);
+		
+		COLORREF oldPen, oldBrush;
 
-		dc->MoveTo(top);
-		dc->LineTo(left);
-		dc->LineTo(right);
-		dc->LineTo(top);
+		dc->SelectObject(GetStockObject(DC_BRUSH));
+		dc->SelectObject(GetStockObject(DC_PEN));
+
+		oldBrush = dc->SetDCBrushColor(color);
+		oldPen = dc->SetDCPenColor(color);
+		
+		Polygon(*dc, points, 3);
+		
+		dc->SetDCBrushColor(oldBrush);
+		dc->SetDCPenColor(oldPen);
 	}
-private:
-	int x1, x2, y1, y2;
 };
 
 class MyRectangle : public MyShape {
 public:
-	MyRectangle(int x1, int y1, int x2, int y2, DWORD color) {
-		this->x1 = x1;
-		this->x2 = x2;
-		this->y1 = y1;
-		this->y2 = y2;
+	MyRectangle(CPoint startP, CPoint endP, COLORREF color) {
+		dots.push_back(startP);
+		dots.push_back(endP);
+		this->color = color;
 	}
 
-	void drawMe(CDC *dc) {
-		dc->Rectangle(x1, y1, x2, y2);
+	void drawMe(CDC *dc) const {
+		COLORREF oldPen, oldBrush;
+		
+		dc->SelectObject(GetStockObject(DC_BRUSH));
+		dc->SelectObject(GetStockObject(DC_PEN));
+
+		oldBrush = dc->SetDCBrushColor(color);
+		oldPen = dc->SetDCPenColor(color);
+
+		dc->Rectangle(dots[0].x, dots[0].y, dots[1].x, dots[1].y);
+
+		dc->SetDCBrushColor(oldBrush);
+		dc->SetDCPenColor(oldPen);
 	}
-private:
-	int x1, x2, y1, y2;
 };
 
 class MyPolygon : public MyShape {
 public:
-	MyPolygon(vector<CPoint> dotsA, DWORD color) {
+	MyPolygon(vector<CPoint> dotsA, COLORREF color) {
 		dots = dotsA;
 		size = dots.size();
+		this->color = color;
 	}
 	~MyPolygon() {
 		dots.clear();
 	}
 
-	void drawMe(CDC *dc) {
-		dc->MoveTo(dots[0]);
-		for (int i = 1;i < size;i++) {
-			dc->LineTo(dots[i]);
+	void drawMe(CDC *dc) const {
+		CPoint *points;
+		points = new CPoint[size];
+
+		for (int i = 0;i < size;i++) {
+			points[i] = dots[i];
 		}
-		dc->LineTo(dots[0]);
+
+		COLORREF oldPen, oldBrush;
+
+		dc->SelectObject(GetStockObject(DC_BRUSH));
+		dc->SelectObject(GetStockObject(DC_PEN));
+
+		oldBrush = dc->SetDCBrushColor(color);
+		oldPen = dc->SetDCPenColor(color);
+
+		Polygon(*dc, points, size);
+
+		dc->SetDCBrushColor(oldBrush);
+		dc->SetDCPenColor(oldPen);
+
+		delete[] points;
 	}
 private:
-	vector<CPoint> dots;
 	int size;
 };
 
