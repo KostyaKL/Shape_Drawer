@@ -15,6 +15,7 @@ public:
 		dots.clear();
 		color = RGB(0, 0, 0);
 		isSelected = FALSE;
+		index = -1;
 	}
 	
 	virtual ~MyShape() {
@@ -31,6 +32,18 @@ public:
 		isSelected = FALSE;
 	}
 
+	void updateColor(COLORREF newColor) {
+		color = newColor;
+	}
+
+	void setIndex(int index) {
+		this->index = index;
+	}
+
+	int myIndex() const {
+		return index;
+	}
+
 	virtual DWORD getColor() const{
 		return color;
 	}
@@ -38,21 +51,23 @@ protected:
 	vector<CPoint> dots;
 	COLORREF color;
 	bool isSelected;
+	int index;
 };
 
 class MyLine : public MyShape {
 public:
-	MyLine(CPoint startP, CPoint endP, COLORREF color) {
+	MyLine(CPoint startP, CPoint endP, COLORREF color, int index) {
 		dots.push_back(startP);
 		dots.push_back(endP);
 		this->color = color;
+		this->index = index;
 	}
 
 	void drawMe(CDC *dc) const {
 		COLORREF oldPen;
 		dc->SelectObject(GetStockObject(DC_PEN));
 		if (isSelected) {
-			oldPen = dc->SetDCPenColor(RGB(127, 127, 127));
+			oldPen = dc->SetDCPenColor(color + RGB(255, 255, 255));
 		}
 		else {
 			oldPen = dc->SetDCPenColor(color);
@@ -76,10 +91,11 @@ public:
 
 class MyEllipse : public MyShape {
 public:
-	MyEllipse(CPoint startP, CPoint endP, COLORREF color) {
+	MyEllipse(CPoint startP, CPoint endP, COLORREF color, int index) {
 		dots.push_back(startP);
 		dots.push_back(endP);
 		this->color = color;
+		this->index = index;
 	}
 
 	void drawMe(CDC *dc) const {
@@ -88,7 +104,7 @@ public:
 		dc->SelectObject(GetStockObject(DC_BRUSH));
 		dc->SelectObject(GetStockObject(DC_PEN));
 		if (isSelected) {
-			oldPen = dc->SetDCPenColor(RGB(127, 127, 127));
+			oldPen = dc->SetDCPenColor(color ^ RGB(255, 255, 255));
 		}
 		else {
 			oldPen = dc->SetDCPenColor(color);
@@ -127,10 +143,11 @@ public:
 
 class MyTriangle : public MyShape {
 public:
-	MyTriangle(CPoint startP, CPoint endP, COLORREF color) {
+	MyTriangle(CPoint startP, CPoint endP, COLORREF color, int index) {
 		dots.push_back(startP);
 		dots.push_back(endP);
 		this->color = color;
+		this->index = index;
 	}
 
 	void drawMe(CDC *dc) const {
@@ -145,7 +162,7 @@ public:
 
 		dc->SelectObject(GetStockObject(DC_BRUSH));
 		if (isSelected) {
-			oldPen = dc->SetDCPenColor(RGB(127, 127, 127));
+			oldPen = dc->SetDCPenColor(color ^ RGB(255, 255, 255));
 		}
 		else {
 			oldPen = dc->SetDCPenColor(color);
@@ -171,10 +188,11 @@ public:
 
 class MyRectangle : public MyShape {
 public:
-	MyRectangle(CPoint startP, CPoint endP, COLORREF color) {
+	MyRectangle(CPoint startP, CPoint endP, COLORREF color, int index) {
 		dots.push_back(startP);
 		dots.push_back(endP);
 		this->color = color;
+		this->index = index;
 	}
 
 	void drawMe(CDC *dc) const {
@@ -184,7 +202,7 @@ public:
 		dc->SelectObject(GetStockObject(DC_PEN));
 
 		if (isSelected) {
-			oldPen = dc->SetDCPenColor(RGB(127, 127, 127));
+			oldPen = dc->SetDCPenColor(color ^ RGB(255, 255, 255));
 		}
 		else {
 			oldPen = dc->SetDCPenColor(color);
@@ -223,10 +241,11 @@ public:
 
 class MyPolygon : public MyShape {
 public:
-	MyPolygon(vector<CPoint> dotsA, COLORREF color) {
+	MyPolygon(vector<CPoint> dotsA, COLORREF color, int index) {
 		dots = dotsA;
 		size = dots.size();
 		this->color = color;
+		this->index = index;
 	}
 	~MyPolygon() {
 		dots.clear();
@@ -244,7 +263,7 @@ public:
 
 		dc->SelectObject(GetStockObject(DC_BRUSH));
 		if (isSelected) {
-			oldPen = dc->SetDCPenColor(RGB(127, 127, 127));
+			oldPen = dc->SetDCPenColor(color ^ RGB(255, 255, 255));
 		}
 		else {
 			oldPen = dc->SetDCPenColor(color);
