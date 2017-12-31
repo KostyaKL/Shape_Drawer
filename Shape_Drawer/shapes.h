@@ -14,10 +14,21 @@ public:
 	MyShape() {
 		dots.clear();
 		color = RGB(0, 0, 0);
+		isSelected = FALSE;
 	}
-	virtual void drawMe(CDC *) const = 0;
+	
 	virtual ~MyShape() {
 		dots.clear();
+	}
+
+	virtual void drawMe(CDC *) const = 0;
+
+	virtual MyShape *isInside(CPoint point, CDC *dc) = 0;
+
+	virtual void offsetShape(CPoint offset) = 0;
+
+	void unselectShape() {
+		isSelected = FALSE;
 	}
 
 	virtual DWORD getColor() const{
@@ -26,6 +37,7 @@ public:
 protected:
 	vector<CPoint> dots;
 	COLORREF color;
+	bool isSelected;
 };
 
 class MyLine : public MyShape {
@@ -39,12 +51,26 @@ public:
 	void drawMe(CDC *dc) const {
 		COLORREF oldPen;
 		dc->SelectObject(GetStockObject(DC_PEN));
-		oldPen = dc->SetDCPenColor(color);
+		if (isSelected) {
+			oldPen = dc->SetDCPenColor(RGB(127, 127, 127));
+		}
+		else {
+			oldPen = dc->SetDCPenColor(color);
+		}
 
 		dc->MoveTo(dots[0]);
 		dc->LineTo(dots[1]);
 
 		dc->SetDCPenColor(oldPen);
+	}
+
+	virtual MyShape *isInside(CPoint point, CDC *dc) {
+		return NULL;
+	}
+
+	virtual void offsetShape(CPoint offset) {
+		dots[0] += offset;
+		dots[1] += offset;
 	}
 };
 
@@ -61,14 +87,41 @@ public:
 
 		dc->SelectObject(GetStockObject(DC_BRUSH));
 		dc->SelectObject(GetStockObject(DC_PEN));
-
+		if (isSelected) {
+			oldPen = dc->SetDCPenColor(RGB(127, 127, 127));
+		}
+		else {
+			oldPen = dc->SetDCPenColor(color);
+		}
 		oldBrush = dc->SetDCBrushColor(color);
-		oldPen = dc->SetDCPenColor(color);
 
 		dc->Ellipse(dots[0].x, dots[0].y, dots[1].x, dots[1].y);
 
 		dc->SetDCBrushColor(oldBrush);
 		dc->SetDCPenColor(oldPen);
+	}
+
+	virtual MyShape *isInside(CPoint point, CDC *dc) {
+		if (point.x > dots[0].x && point.y > dots[0].y && point.x < dots[1].x && point.y < dots[1].y) {
+			isSelected = TRUE;
+			drawMe(dc);
+			return this;
+		}
+		else if (point.x < dots[0].x && point.y < dots[0].y && point.x > dots[1].x && point.y > dots[1].y) {
+			isSelected = TRUE;
+			drawMe(dc);
+			return this;
+		}
+		else {
+			isSelected = FALSE;
+			drawMe(dc);
+			return NULL;
+		}
+	}
+
+	virtual void offsetShape(CPoint offset) {
+		dots[0] += offset;
+		dots[1] += offset;
 	}
 };
 
@@ -91,15 +144,28 @@ public:
 		COLORREF oldPen, oldBrush;
 
 		dc->SelectObject(GetStockObject(DC_BRUSH));
-		dc->SelectObject(GetStockObject(DC_PEN));
+		if (isSelected) {
+			oldPen = dc->SetDCPenColor(RGB(127, 127, 127));
+		}
+		else {
+			oldPen = dc->SetDCPenColor(color);
+		}
 
 		oldBrush = dc->SetDCBrushColor(color);
-		oldPen = dc->SetDCPenColor(color);
 		
 		Polygon(*dc, points, 3);
 		
 		dc->SetDCBrushColor(oldBrush);
 		dc->SetDCPenColor(oldPen);
+	}
+
+	virtual MyShape *isInside(CPoint point, CDC *dc) {
+		return NULL;
+	}
+
+	virtual void offsetShape(CPoint offset) {
+		dots[0] += offset;
+		dots[1] += offset;
 	}
 };
 
@@ -117,13 +183,41 @@ public:
 		dc->SelectObject(GetStockObject(DC_BRUSH));
 		dc->SelectObject(GetStockObject(DC_PEN));
 
+		if (isSelected) {
+			oldPen = dc->SetDCPenColor(RGB(127, 127, 127));
+		}
+		else {
+			oldPen = dc->SetDCPenColor(color);
+		}
 		oldBrush = dc->SetDCBrushColor(color);
-		oldPen = dc->SetDCPenColor(color);
 
 		dc->Rectangle(dots[0].x, dots[0].y, dots[1].x, dots[1].y);
 
 		dc->SetDCBrushColor(oldBrush);
 		dc->SetDCPenColor(oldPen);
+	}
+
+	virtual MyShape *isInside(CPoint point, CDC *dc) {
+		if (point.x > dots[0].x && point.y > dots[0].y && point.x < dots[1].x && point.y < dots[1].y) {
+			isSelected = TRUE;
+			drawMe(dc);
+			return this;
+		}
+		else if (point.x < dots[0].x && point.y < dots[0].y && point.x > dots[1].x && point.y > dots[1].y) {
+			isSelected = TRUE;
+			drawMe(dc);
+			return this;
+		}
+		else {
+			isSelected = FALSE;
+			drawMe(dc);
+			return NULL;
+		}
+	}
+
+	virtual void offsetShape(CPoint offset) {
+		dots[0] += offset;
+		dots[1] += offset;
 	}
 };
 
@@ -149,10 +243,14 @@ public:
 		COLORREF oldPen, oldBrush;
 
 		dc->SelectObject(GetStockObject(DC_BRUSH));
-		dc->SelectObject(GetStockObject(DC_PEN));
+		if (isSelected) {
+			oldPen = dc->SetDCPenColor(RGB(127, 127, 127));
+		}
+		else {
+			oldPen = dc->SetDCPenColor(color);
+		}
 
 		oldBrush = dc->SetDCBrushColor(color);
-		oldPen = dc->SetDCPenColor(color);
 
 		Polygon(*dc, points, size);
 
@@ -160,6 +258,16 @@ public:
 		dc->SetDCPenColor(oldPen);
 
 		delete[] points;
+	}
+
+	virtual MyShape *isInside(CPoint point, CDC *dc) {
+		return NULL;
+	}
+
+	virtual void offsetShape(CPoint offset) {
+		for (int i = 0;i < size;i++) {
+			dots[i] += offset;
+		}
 	}
 private:
 	int size;
