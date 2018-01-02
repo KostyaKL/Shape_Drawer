@@ -15,18 +15,25 @@ public:
 		dots.clear();
 		color = RGB(0, 0, 0);
 		isSelected = FALSE;
-		index = -1;
+	}
+
+	MyShape(const MyShape &me) {
+		dots = me.dots;
+		color = me.color;
+		isSelected = me.isSelected;
 	}
 	
 	virtual ~MyShape() {
 		dots.clear();
 	}
 
-	virtual void drawMe(CDC *) const = 0;
+	virtual void drawMe(CDC *) const {   }
 
-	virtual MyShape *isInside(CPoint point, CDC *dc) = 0;
+	virtual bool isInside(CPoint point, CDC *dc) {
+		return FALSE;
+	}
 
-	virtual void offsetShape(CPoint offset) = 0;
+	virtual void offsetShape(CPoint offset) {   }
 
 	void unselectShape() {
 		isSelected = FALSE;
@@ -36,14 +43,6 @@ public:
 		color = newColor;
 	}
 
-	void setIndex(int index) {
-		this->index = index;
-	}
-
-	int myIndex() const {
-		return index;
-	}
-
 	virtual DWORD getColor() const{
 		return color;
 	}
@@ -51,7 +50,6 @@ protected:
 	vector<CPoint> dots;
 	COLORREF color;
 	bool isSelected;
-	int index;
 };
 
 
@@ -68,14 +66,17 @@ public:
 		dots.clear();
 		size = 0;
 		color = RGB(0, 0, 0);
-		index = -1;
 	}
-	MyPolygon(vector<CPoint> dotsA, COLORREF color, int index) {
+	MyPolygon(vector<CPoint> dotsA, COLORREF color) {
 		dots = dotsA;
 		size = dots.size();
 		this->color = color;
-		this->index = index;
 	}
+
+	MyPolygon(const MyPolygon &me) : MyShape(me) {
+		size = me.size;
+	}
+
 	~MyPolygon() {
 		dots.clear();
 	}
@@ -109,7 +110,7 @@ public:
 		delete[] points;
 	}
 
-	virtual virtual MyShape *isInside(CPoint point, CDC *dc) {
+	virtual bool isInside(CPoint point, CDC *dc) {
 		double distance, dist0, dist1;
 		for (int i = 1;i < size;i++) {
 			distance = utilityFunctions::CPdist(dots[i-1], dots[i]);
@@ -118,7 +119,7 @@ public:
 			if (dist0 + dist1 < distance + 2.5) {
 				isSelected = TRUE;
 				drawMe(dc);
-				return this;
+				return TRUE;
 			}
 		}
 		distance = utilityFunctions::CPdist(dots[size - 1], dots[0]);
@@ -127,12 +128,12 @@ public:
 		if (dist0 + dist1 < distance + 3.5) {
 			isSelected = TRUE;
 			drawMe(dc);
-			return this;
+			return TRUE;
 		}
 		else {
 			isSelected = FALSE;
 			drawMe(dc);
-			return NULL;
+			return FALSE;
 		}
 
 	}
@@ -150,12 +151,15 @@ protected:
 
 class MyLine : public MyPolygon {
 public:
-	MyLine(CPoint startP, CPoint endP, COLORREF color, int index) {
+	MyLine() : MyPolygon() { }
+
+	MyLine(CPoint startP, CPoint endP, COLORREF color) {
 		dots.push_back(startP);
 		dots.push_back(endP);
 		this->color = color;
-		this->index = index;
 	}
+
+	MyLine(const MyLine &me) : MyPolygon(me) {	}
 
 	void drawMe(CDC *dc) const {
 		COLORREF oldPen;
@@ -173,7 +177,7 @@ public:
 		dc->SetDCPenColor(oldPen);
 	}
 
-	virtual MyShape *isInside(CPoint point, CDC *dc) {
+	virtual bool isInside(CPoint point, CDC *dc) {
 		double distance = utilityFunctions::CPdist(dots[0], dots[1]);
 		double dist0 = utilityFunctions::CPdist(dots[0], point);
 		double dist1 = utilityFunctions::CPdist(dots[1], point);
@@ -181,12 +185,12 @@ public:
 		if (dist0 + dist1 < distance + 2.5) {
 			isSelected = TRUE;
 			drawMe(dc);
-			return this;
+			return TRUE;
 		}
 		else {
 			isSelected = FALSE;
 			drawMe(dc);
-			return NULL;
+			return FALSE;
 		}
 	}
 
@@ -200,12 +204,14 @@ public:
 
 class MyTriangle : public MyPolygon {
 public:
-	MyTriangle(CPoint startP, CPoint endP, COLORREF color, int index) {
+	MyTriangle() : MyPolygon() { }
+	MyTriangle(CPoint startP, CPoint endP, COLORREF color) {
 		dots.push_back(startP);
 		dots.push_back(endP);
 		this->color = color;
-		this->index = index;
 	}
+
+	MyTriangle(const MyTriangle &me) : MyPolygon(me) {	}
 
 	void drawMe(CDC *dc) const {
 		CPoint points[3]; //0 - top, 1 - left, 2 - right
@@ -234,7 +240,7 @@ public:
 		dc->SetDCPenColor(oldPen);
 	}
 
-	virtual MyShape *isInside(CPoint point, CDC *dc) {
+	virtual bool isInside(CPoint point, CDC *dc) {
 		double area, area1, area2, area3;
 		CPoint points[3]; //0 - top, 1 - left, 2 - right
 		utilityFunctions::triangle_Vdots(dots[0], dots[1], points[0], points[1], points[2]);
@@ -245,12 +251,12 @@ public:
 		if (area == area1 + area2 + area3) {
 			isSelected = TRUE;
 			drawMe(dc);
-			return this;
+			return TRUE;
 		}
 		else {
 			isSelected = FALSE;
 			drawMe(dc);
-			return NULL;
+			return FALSE;
 		}
 	}
 
@@ -262,12 +268,15 @@ public:
 
 class MyRectangle : public MyPolygon {
 public:
-	MyRectangle(CPoint startP, CPoint endP, COLORREF color, int index) {
+	MyRectangle() : MyPolygon() { }
+
+	MyRectangle(CPoint startP, CPoint endP, COLORREF color) {
 		dots.push_back(startP);
 		dots.push_back(endP);
 		this->color = color;
-		this->index = index;
 	}
+
+	MyRectangle(const MyRectangle &me) : MyPolygon(me) {	}
 
 	void drawMe(CDC *dc) const {
 		COLORREF oldPen, oldBrush;
@@ -289,7 +298,7 @@ public:
 		dc->SetDCPenColor(oldPen);
 	}
 
-	virtual MyShape *isInside(CPoint point, CDC *dc) {
+	virtual bool isInside(CPoint point, CDC *dc) {
 		int height, width;
 		CPoint center;
 
@@ -305,12 +314,12 @@ public:
 		if (point.x < center.x+width/2 && point.x > center.x-width/2 && point.y < center.y+ height /2 && point.y > center.y-height/2) {
 			isSelected = TRUE;
 			drawMe(dc);
-			return this;
+			return TRUE;
 		}
 		else {
 			isSelected = FALSE;
 			drawMe(dc);
-			return NULL;
+			return FALSE;
 		}
 	}
 
@@ -322,12 +331,15 @@ public:
 
 class MyEllipse : public MyShape {
 public:
-	MyEllipse(CPoint startP, CPoint endP, COLORREF color, int index) {
+	MyEllipse() : MyShape() { }
+
+	MyEllipse(CPoint startP, CPoint endP, COLORREF color) {
 		dots.push_back(startP);
 		dots.push_back(endP);
 		this->color = color;
-		this->index = index;
 	}
+
+	MyEllipse(const MyEllipse &me) : MyShape(me) {	}
 
 	void drawMe(CDC *dc) const {
 		COLORREF oldPen, oldBrush;
@@ -348,7 +360,7 @@ public:
 		dc->SetDCPenColor(oldPen);
 	}
 
-	virtual MyShape *isInside(CPoint point, CDC *dc) {
+	virtual bool isInside(CPoint point, CDC *dc) {
 		int height, width;
 		CPoint center, f1, f2;
 		double fDist, dist1, dist2, bigRadius;
@@ -389,12 +401,12 @@ public:
 		if (dist1 + dist2 < 2*bigRadius) {
 			isSelected = TRUE;
 			drawMe(dc);
-			return this;
+			return TRUE;
 		}
 		else {
 			isSelected = FALSE;
 			drawMe(dc);
-			return NULL;
+			return FALSE;
 		}
 	}
 

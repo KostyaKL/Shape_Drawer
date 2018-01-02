@@ -25,18 +25,15 @@ public:
 	}
 
 
-	static MyShape *shapeSrch(CPoint point, vector<MyShape*> shapes, CDC *dc) {
-		MyShape *ret;
+	static MyShape **shapeSrch(CPoint point, vector<MyShape*> &shapes, CDC *dc) {
 		int size;
-		ret = NULL;
 		size = shapes.size();
 		for (int i = size - 1;i >= 0;i--) {
-			ret = shapes[i]->isInside(point, dc);
-			if (ret != NULL) {
-				return ret;
+			if (shapes[i]->isInside(point, dc)) {
+				return &shapes[i];
 			}
 		}
-		return ret;
+		return NULL;
 	}
 
 
@@ -103,6 +100,31 @@ public:
 		area = ((a.x*(b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y)) / 2.0);
 		area = area < 0 ? area * -1 : area;
 		return area;
+	}
+
+	static void savePrevState(vector<MyShape*> &shapes, vector<MyShape> &lastAction) {
+		int size = shapes.size();
+		for (int i = 0;i < size;i++) {
+			lastAction.push_back(*shapes[i]);
+		}
+	}
+
+	static void undoSwap(vector<MyShape*> &shapes, vector<MyShape> &lastAction) {
+		vector<MyShape> temp = lastAction;
+		MyShape tempObj;
+		lastAction.clear();
+		int size = shapes.size();
+		for (int i = 0;i < size;i++) {
+			lastAction.push_back(tempObj);
+			delete shapes[i];
+			shapes.erase(shapes.begin() + i);
+		}
+		shapes.clear();
+		
+		size = temp.size();
+		for (int i = 0;i < size;i++) {
+			shapes.push_back(new MyShape(temp[i])); //operator = overloading / copy constructor
+		}
 	}
 };
 
