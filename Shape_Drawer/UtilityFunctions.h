@@ -102,28 +102,20 @@ public:
 		return area;
 	}
 
-	static void savePrevState(vector<MyShape*> &shapes, vector<MyShape> &lastAction) {
-		int size = shapes.size();
-		for (int i = 0;i < size;i++) {
-			lastAction.push_back(*shapes[i]);
-		}
-	}
+	static void savePrevState(vector<MyShape*> &shapes, vector<MyShape*> &lastAction) {
+		MyShape *temp;		
+		int size;
 
-	static void undoSwap(vector<MyShape*> &shapes, vector<MyShape> &lastAction) {
-		vector<MyShape> temp = lastAction;
-		MyShape tempObj;
-		lastAction.clear();
-		int size = shapes.size();
+		size = lastAction.size();
 		for (int i = 0;i < size;i++) {
-			lastAction.push_back(tempObj);
-			delete shapes[i];
-			shapes.erase(shapes.begin() + i);
+			delete lastAction[i];
 		}
-		shapes.clear();
-		
-		size = temp.size();
+		lastAction.clear();
+
+		size = shapes.size();
 		for (int i = 0;i < size;i++) {
-			shapes.push_back(new MyShape(temp[i])); //operator = overloading / copy constructor
+			temp = shapes[i]->clone();
+			lastAction.push_back(temp);
 		}
 	}
 };

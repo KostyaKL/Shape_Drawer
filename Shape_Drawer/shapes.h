@@ -17,10 +17,14 @@ public:
 		isSelected = FALSE;
 	}
 
-	MyShape(const MyShape &me) {
-		dots = me.dots;
-		color = me.color;
-		isSelected = me.isSelected;
+	MyShape(const MyShape *me) {
+		dots = me->dots;
+		color = me->color;
+		isSelected = me->isSelected;
+	}
+
+	virtual MyShape *clone() {
+		return this;
 	}
 	
 	virtual ~MyShape() {
@@ -39,12 +43,21 @@ public:
 		isSelected = FALSE;
 	}
 
+	virtual bool selectedState() const {
+		return isSelected;
+	}
+
 	void updateColor(COLORREF newColor) {
 		color = newColor;
 	}
 
 	virtual DWORD getColor() const{
 		return color;
+	}
+
+	virtual void updateDots(CPoint point, int i) {
+		dots[i].x = point.x;
+		dots[i].y = point.y;
 	}
 protected:
 	vector<CPoint> dots;
@@ -73,8 +86,12 @@ public:
 		this->color = color;
 	}
 
-	MyPolygon(const MyPolygon &me) : MyShape(me) {
-		size = me.size;
+	MyPolygon(const MyPolygon *me) : MyShape(me) {
+		size = me->size;
+	}
+
+	virtual MyShape *clone() {
+		return new MyPolygon(*this);
 	}
 
 	~MyPolygon() {
@@ -159,7 +176,11 @@ public:
 		this->color = color;
 	}
 
-	MyLine(const MyLine &me) : MyPolygon(me) {	}
+	MyLine(const MyLine *me) : MyPolygon(me) {	}
+
+	virtual MyShape *clone() {
+		return new MyLine(*this);
+	}
 
 	void drawMe(CDC *dc) const {
 		COLORREF oldPen;
@@ -211,7 +232,11 @@ public:
 		this->color = color;
 	}
 
-	MyTriangle(const MyTriangle &me) : MyPolygon(me) {	}
+	MyTriangle(const MyTriangle *me) : MyPolygon(me) {	}
+
+	virtual MyShape *clone() {
+		return new MyTriangle(*this);
+	}
 
 	void drawMe(CDC *dc) const {
 		CPoint points[3]; //0 - top, 1 - left, 2 - right
@@ -276,9 +301,13 @@ public:
 		this->color = color;
 	}
 
-	MyRectangle(const MyRectangle &me) : MyPolygon(me) {	}
+	MyRectangle(const MyRectangle *me) : MyPolygon(me) {	}
 
-	void drawMe(CDC *dc) const {
+	virtual MyShape *clone() {
+		return new MyRectangle(*this);
+	}
+
+	virtual void drawMe(CDC *dc) const {
 		COLORREF oldPen, oldBrush;
 		
 		dc->SelectObject(GetStockObject(DC_BRUSH));
@@ -329,6 +358,102 @@ public:
 	}
 };
 
+class colorMap : public MyRectangle {
+public:
+	colorMap() {
+		size = 250;
+		offset = 130;
+		CPoint a(offset - 1, 0);
+		CPoint b(offset + 277, 258);
+		dots.push_back(a);
+		dots.push_back(b);
+		color = RGB(255,255,255);
+	}
+	void drawMe(CDC *dc) const {
+		double h, l;
+		
+		COLORREF rgb;
+		h = 0;
+		l = 0;
+		dc->MoveTo(0, 0);
+		dc->Rectangle(offset - 1, 0, offset + 277, 280);
+		dc->Rectangle(offset - 1, 0, offset + 277, 258);
+
+		for (int i = offset;i <= size + offset;i++) {
+			for (int j = 0;j <= size;j++) {
+				rgb = CDrawingManager::HLStoRGB_ONE(h, l, 1);
+				dc->SetPixel(i, j, rgb);
+				l += 0.004;
+			}
+			l = 0;
+			h += 0.004;
+		}
+
+		for (int i = size + offset + 5;i <= size + offset + 25;i++) {
+			for (int j = 0;j <= size;j++) {
+				rgb = CDrawingManager::HLStoRGB_ONE(h, l, 0);
+				dc->SetPixel(i, j, rgb);
+				l += 0.004;
+			}
+			l = 0;
+			h += 0.05;
+		}
+
+		CString str("Selected Color:");
+		CRect box(offset + 30, 260, offset + 150, 275);
+		dc->DrawText(str, box, DT_CENTER);
+	}
+
+	bool isInside(CPoint point) {
+		int height, width;
+		CPoint center;
+
+		height = dots[1].y - dots[0].y;
+		width = dots[1].x - dots[0].x;
+
+		center.x = dots[0].x + width / 2;
+		center.y = dots[0].y + height / 2;
+
+		height = height < 0 ? height * -1 : height;
+		width = width < 0 ? width * -1 : width;
+
+		if (point.x < center.x + width / 2 && point.x > center.x - width / 2 && point.y < center.y + height / 2 && point.y > center.y - height / 2) {
+			isSelected = TRUE;
+			return TRUE;
+		}
+		else {
+			isSelected = FALSE;
+			return FALSE;
+		}
+	}
+
+	void selectedColor(CDC *dc, COLORREF color) {
+		CPoint a(offset + 185,259);
+		CPoint b(offset + 250,278);
+
+		
+		COLORREF oldPen, oldBrush;
+
+		dc->SelectObject(GetStockObject(DC_BRUSH));
+		dc->SelectObject(GetStockObject(DC_PEN));
+
+		
+		oldPen = dc->SetDCPenColor(color);
+
+		oldBrush = dc->SetDCBrushColor(color);
+
+		dc->Rectangle(a.x,a.y,b.x,b.y);
+
+		dc->SetDCBrushColor(oldBrush);
+		dc->SetDCPenColor(oldPen);
+
+		return;
+	}
+private:
+	int size;
+	int offset;
+};
+
 class MyEllipse : public MyShape {
 public:
 	MyEllipse() : MyShape() { }
@@ -339,7 +464,11 @@ public:
 		this->color = color;
 	}
 
-	MyEllipse(const MyEllipse &me) : MyShape(me) {	}
+	MyEllipse(const MyEllipse *me) : MyShape(me) {	}
+
+	virtual MyShape *clone() {
+		return new MyEllipse(*this);
+	}
 
 	void drawMe(CDC *dc) const {
 		COLORREF oldPen, oldBrush;
