@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include <iostream>
 #include <vector>
+#include <fstream>
 using namespace std;
 
 //void triangle_Vdots(CPoint start, CPoint end, CPoint &top, CPoint &left, CPoint &right);
@@ -15,12 +16,14 @@ public:
 		dots.clear();
 		color = RGB(0, 0, 0);
 		isSelected = FALSE;
+		type = 0;
 	}
 
 	MyShape(const MyShape *me) {
 		dots = me->dots;
 		color = me->color;
 		isSelected = me->isSelected;
+		type = me->type;
 	}
 
 	virtual MyShape *clone() {
@@ -59,10 +62,20 @@ public:
 		dots[i].x = point.x;
 		dots[i].y = point.y;
 	}
+
+	virtual void writeFile(fstream *myFile) {
+		myFile->write((char*)&type, sizeof(int));
+		myFile->write((char*)&dots[0].x, sizeof(int));
+		myFile->write((char*)&dots[0].y, sizeof(int));
+		myFile->write((char*)&dots[1].x, sizeof(int));
+		myFile->write((char*)&dots[1].y, sizeof(int));
+		myFile->write((char*)&color, sizeof(COLORREF));
+	}
 protected:
 	vector<CPoint> dots;
 	COLORREF color;
 	bool isSelected;
+	int type;
 };
 
 
@@ -79,15 +92,18 @@ public:
 		dots.clear();
 		size = 0;
 		color = RGB(0, 0, 0);
+		type = 5;
 	}
 	MyPolygon(vector<CPoint> dotsA, COLORREF color) {
 		dots = dotsA;
 		size = dots.size();
 		this->color = color;
+		type = 5;
 	}
 
 	MyPolygon(const MyPolygon *me) : MyShape(me) {
 		size = me->size;
+		type = 5;
 	}
 
 	virtual MyShape *clone() {
@@ -160,6 +176,16 @@ public:
 			dots[i] += offset;
 		}
 	}
+
+	virtual void writeFile(fstream *myFile) {
+		myFile->write((char*)&type, sizeof(int));
+		myFile->write((char*)&size, sizeof(int));
+		for (int i = 0;i < size;i++) {
+			myFile->write((char*)&dots[i].x, sizeof(int));
+			myFile->write((char*)&dots[i].y, sizeof(int));
+		}
+		myFile->write((char*)&color, sizeof(COLORREF));
+	}
 protected:
 	int size;
 };
@@ -168,15 +194,20 @@ protected:
 
 class MyLine : public MyPolygon {
 public:
-	MyLine() : MyPolygon() { }
+	MyLine() : MyPolygon() {
+		type = 1;
+	}
 
 	MyLine(CPoint startP, CPoint endP, COLORREF color) {
 		dots.push_back(startP);
 		dots.push_back(endP);
 		this->color = color;
+		type = 1;
 	}
 
-	MyLine(const MyLine *me) : MyPolygon(me) {	}
+	MyLine(const MyLine *me) : MyPolygon(me) {
+		type = 1;
+	}
 
 	virtual MyShape *clone() {
 		return new MyLine(*this);
@@ -219,20 +250,34 @@ public:
 		dots[0] += offset;
 		dots[1] += offset;
 	}
+
+	virtual void writeFile(fstream *myFile) {
+		myFile->write((char*)&type, sizeof(int));
+		myFile->write((char*)&dots[0].x, sizeof(int));
+		myFile->write((char*)&dots[0].y, sizeof(int));
+		myFile->write((char*)&dots[1].x, sizeof(int));
+		myFile->write((char*)&dots[1].y, sizeof(int));
+		myFile->write((char*)&color, sizeof(COLORREF));
+	}
 };
 
 
 
 class MyTriangle : public MyPolygon {
 public:
-	MyTriangle() : MyPolygon() { }
+	MyTriangle() : MyPolygon() {
+		type = 3;
+	}
 	MyTriangle(CPoint startP, CPoint endP, COLORREF color) {
 		dots.push_back(startP);
 		dots.push_back(endP);
 		this->color = color;
+		type = 3;
 	}
 
-	MyTriangle(const MyTriangle *me) : MyPolygon(me) {	}
+	MyTriangle(const MyTriangle *me) : MyPolygon(me) {
+		type = 3;
+	}
 
 	virtual MyShape *clone() {
 		return new MyTriangle(*this);
@@ -289,19 +334,33 @@ public:
 		dots[0] += offset;
 		dots[1] += offset;
 	}
+
+	virtual void writeFile(fstream *myFile) {
+		myFile->write((char*)&type, sizeof(int));
+		myFile->write((char*)&dots[0].x, sizeof(int));
+		myFile->write((char*)&dots[0].y, sizeof(int));
+		myFile->write((char*)&dots[1].x, sizeof(int));
+		myFile->write((char*)&dots[1].y, sizeof(int));
+		myFile->write((char*)&color, sizeof(COLORREF));
+	}
 };
 
 class MyRectangle : public MyPolygon {
 public:
-	MyRectangle() : MyPolygon() { }
+	MyRectangle() : MyPolygon() {
+		type = 4;
+	}
 
 	MyRectangle(CPoint startP, CPoint endP, COLORREF color) {
 		dots.push_back(startP);
 		dots.push_back(endP);
 		this->color = color;
+		type = 4;
 	}
 
-	MyRectangle(const MyRectangle *me) : MyPolygon(me) {	}
+	MyRectangle(const MyRectangle *me) : MyPolygon(me) {
+		type = 4;
+	}
 
 	virtual MyShape *clone() {
 		return new MyRectangle(*this);
@@ -356,115 +415,35 @@ public:
 		dots[0] += offset;
 		dots[1] += offset;
 	}
+
+	virtual void writeFile(fstream *myFile) {
+		myFile->write((char*)&type, sizeof(int));
+		myFile->write((char*)&dots[0].x, sizeof(int));
+		myFile->write((char*)&dots[0].y, sizeof(int));
+		myFile->write((char*)&dots[1].x, sizeof(int));
+		myFile->write((char*)&dots[1].y, sizeof(int));
+		myFile->write((char*)&color, sizeof(COLORREF));
+	}
 };
 
-class colorMap : public MyRectangle {
-public:
-	colorMap() {
-		size = 250;
-		offset = 130;
-		CPoint a(offset - 1, 0);
-		CPoint b(offset + 277, 258);
-		dots.push_back(a);
-		dots.push_back(b);
-		color = RGB(255,255,255);
-	}
-	void drawMe(CDC *dc) const {
-		double h, l;
-		
-		COLORREF rgb;
-		h = 0;
-		l = 0;
-		dc->MoveTo(0, 0);
-		dc->Rectangle(offset - 1, 0, offset + 277, 280);
-		dc->Rectangle(offset - 1, 0, offset + 277, 258);
 
-		for (int i = offset;i <= size + offset;i++) {
-			for (int j = 0;j <= size;j++) {
-				rgb = CDrawingManager::HLStoRGB_ONE(h, l, 1);
-				dc->SetPixel(i, j, rgb);
-				l += 0.004;
-			}
-			l = 0;
-			h += 0.004;
-		}
-
-		for (int i = size + offset + 5;i <= size + offset + 25;i++) {
-			for (int j = 0;j <= size;j++) {
-				rgb = CDrawingManager::HLStoRGB_ONE(h, l, 0);
-				dc->SetPixel(i, j, rgb);
-				l += 0.004;
-			}
-			l = 0;
-			h += 0.05;
-		}
-
-		CString str("Selected Color:");
-		CRect box(offset + 30, 260, offset + 150, 275);
-		dc->DrawText(str, box, DT_CENTER);
-	}
-
-	bool isInside(CPoint point) {
-		int height, width;
-		CPoint center;
-
-		height = dots[1].y - dots[0].y;
-		width = dots[1].x - dots[0].x;
-
-		center.x = dots[0].x + width / 2;
-		center.y = dots[0].y + height / 2;
-
-		height = height < 0 ? height * -1 : height;
-		width = width < 0 ? width * -1 : width;
-
-		if (point.x < center.x + width / 2 && point.x > center.x - width / 2 && point.y < center.y + height / 2 && point.y > center.y - height / 2) {
-			isSelected = TRUE;
-			return TRUE;
-		}
-		else {
-			isSelected = FALSE;
-			return FALSE;
-		}
-	}
-
-	void selectedColor(CDC *dc, COLORREF color) {
-		CPoint a(offset + 185,259);
-		CPoint b(offset + 250,278);
-
-		
-		COLORREF oldPen, oldBrush;
-
-		dc->SelectObject(GetStockObject(DC_BRUSH));
-		dc->SelectObject(GetStockObject(DC_PEN));
-
-		
-		oldPen = dc->SetDCPenColor(color);
-
-		oldBrush = dc->SetDCBrushColor(color);
-
-		dc->Rectangle(a.x,a.y,b.x,b.y);
-
-		dc->SetDCBrushColor(oldBrush);
-		dc->SetDCPenColor(oldPen);
-
-		return;
-	}
-private:
-	int size;
-	int offset;
-};
 
 class MyEllipse : public MyShape {
 public:
-	MyEllipse() : MyShape() { }
+	MyEllipse() : MyShape() {
+		type = 2;
+	}
 
 	MyEllipse(CPoint startP, CPoint endP, COLORREF color) {
 		dots.push_back(startP);
 		dots.push_back(endP);
 		this->color = color;
+		type = 2;
 	}
 
-	MyEllipse(const MyEllipse *me) : MyShape(me) {	}
+	MyEllipse(const MyEllipse *me) : MyShape(me) {
+		type = 2;
+	}
 
 	virtual MyShape *clone() {
 		return new MyEllipse(*this);
@@ -543,8 +522,112 @@ public:
 		dots[0] += offset;
 		dots[1] += offset;
 	}
+
+	virtual void writeFile(fstream *myFile) {
+		myFile->write((char*)&type, sizeof(int));
+		myFile->write((char*)&dots[0].x, sizeof(int));
+		myFile->write((char*)&dots[0].y, sizeof(int));
+		myFile->write((char*)&dots[1].x, sizeof(int));
+		myFile->write((char*)&dots[1].y, sizeof(int));
+		myFile->write((char*)&color, sizeof(COLORREF));
+	}
 };
 
+class colorMap : public MyRectangle {
+public:
+	colorMap() {
+		size = 250;
+		offset = 130;
+		CPoint a(offset - 1, 0);
+		CPoint b(offset + 277, 258);
+		dots.push_back(a);
+		dots.push_back(b);
+		color = RGB(255, 255, 255);
+		type = 6;
+	}
+	void drawMe(CDC *dc) const {
+		double h, l;
 
+		COLORREF rgb;
+		h = 0;
+		l = 0;
+		dc->MoveTo(0, 0);
+		dc->Rectangle(offset - 1, 0, offset + 277, 280);
+		dc->Rectangle(offset - 1, 0, offset + 277, 258);
+
+		for (int i = offset;i <= size + offset;i++) {
+			for (int j = 0;j <= size;j++) {
+				rgb = CDrawingManager::HLStoRGB_ONE(h, l, 1);
+				dc->SetPixel(i, j, rgb);
+				l += 0.004;
+			}
+			l = 0;
+			h += 0.004;
+		}
+
+		for (int i = size + offset + 5;i <= size + offset + 25;i++) {
+			for (int j = 0;j <= size;j++) {
+				rgb = CDrawingManager::HLStoRGB_ONE(h, l, 0);
+				dc->SetPixel(i, j, rgb);
+				l += 0.004;
+			}
+			l = 0;
+			h += 0.05;
+		}
+
+		CString str("Selected Color:");
+		CRect box(offset + 30, 260, offset + 150, 275);
+		dc->DrawText(str, box, DT_CENTER);
+	}
+
+	bool isInside(CPoint point) {
+		int height, width;
+		CPoint center;
+
+		height = dots[1].y - dots[0].y;
+		width = dots[1].x - dots[0].x;
+
+		center.x = dots[0].x + width / 2;
+		center.y = dots[0].y + height / 2;
+
+		height = height < 0 ? height * -1 : height;
+		width = width < 0 ? width * -1 : width;
+
+		if (point.x < center.x + width / 2 && point.x > center.x - width / 2 && point.y < center.y + height / 2 && point.y > center.y - height / 2) {
+			isSelected = TRUE;
+			return TRUE;
+		}
+		else {
+			isSelected = FALSE;
+			return FALSE;
+		}
+	}
+
+	void selectedColor(CDC *dc, COLORREF color) {
+		CPoint a(offset + 185, 259);
+		CPoint b(offset + 250, 278);
+
+
+		COLORREF oldPen, oldBrush;
+
+		dc->SelectObject(GetStockObject(DC_BRUSH));
+		dc->SelectObject(GetStockObject(DC_PEN));
+
+
+		oldPen = dc->SetDCPenColor(color);
+
+		oldBrush = dc->SetDCBrushColor(color);
+
+		dc->Rectangle(a.x, a.y, b.x, b.y);
+
+		dc->SetDCBrushColor(oldBrush);
+		dc->SetDCPenColor(oldPen);
+
+		return;
+	}
+private:
+	int size;
+	int offset;
+};
 
 #endif
