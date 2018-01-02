@@ -8,6 +8,10 @@
 #include <fstream>
 using namespace std;
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
 //void triangle_Vdots(CPoint start, CPoint end, CPoint &top, CPoint &left, CPoint &right);
 
 class MyShape {
@@ -110,7 +114,7 @@ public:
 		return new MyPolygon(*this);
 	}
 
-	~MyPolygon() {
+	virtual ~MyPolygon() {
 		dots.clear();
 	}
 

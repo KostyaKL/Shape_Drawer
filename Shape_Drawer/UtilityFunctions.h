@@ -5,6 +5,10 @@
 
 #include "stdafx.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
 class utilityFunctions {
 public:
 	static void triangle_Vdots(CPoint start, CPoint end, CPoint &top, CPoint &left, CPoint &right) {
