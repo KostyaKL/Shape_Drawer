@@ -36,13 +36,13 @@
     </TypeIdentifier>
   </Class>
   <Class Name="MyRectangle" Collapsed="true">
-    <Position X="2.75" Y="3.25" Width="1.5" />
+    <Position X="2.5" Y="5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAACEAAAAAEAAAAAQAAAAAAAAAAAAAAAAAAAEAAAAAg=</HashCode>
       <FileName>shapes.h</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="MyEllipse" Collapsed="true">
+  <Class Name="MyEllipse">
     <Position X="7.25" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAACIAAAAAEAAAAAQAAAAAAAAAAAAAAAAAAAEAAAAAg=</HashCode>
@@ -50,7 +50,7 @@
     </TypeIdentifier>
   </Class>
   <Class Name="colorMap" Collapsed="true">
-    <Position X="2.75" Y="4.75" Width="1.5" />
+    <Position X="5.75" Y="5.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AACAAAAAAAEAAAAAQIAAAAAAAQAAAAAABAAAAAAAAAE=</HashCode>
       <FileName>shapes.h</FileName>
