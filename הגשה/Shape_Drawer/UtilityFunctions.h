@@ -9,9 +9,9 @@
 #define new DEBUG_NEW
 #endif
 
-class utilityFunctions {
+class utilityFunctions { //utility functions class to be used as general methods for the program
 public:
-	static void triangle_Vdots(CPoint start, CPoint end, CPoint &top, CPoint &left, CPoint &right) {
+	static void triangle_Vdots(CPoint start, CPoint end, CPoint &top, CPoint &left, CPoint &right) { //calculate triangle vertexes locked in a rectangle
 		if (start.x < end.x) {
 			top.x = start.x + (end.x - start.x) / 2;
 			left.x = start.x;
@@ -29,7 +29,7 @@ public:
 	}
 
 
-	static MyShape **shapeSrch(CPoint point, vector<MyShape*> &shapes, CDC *dc) {
+	static MyShape **shapeSrch(CPoint point, vector<MyShape*> &shapes, CDC *dc) { //determine if a point is inside one of the shapes
 		int size;
 		size = shapes.size();
 		for (int i = size - 1;i >= 0;i--) {
@@ -41,7 +41,7 @@ public:
 	}
 
 
-	static void angleFix(double angle, CPoint startP, CPoint &point) {
+	static void angleFix(double angle, CPoint startP, CPoint &point) { //set aspect ratio 1:1 when LSHIFT is pressed
 		if (angle >= 337.5 && angle < 22.5) { //up
 			point.x = startP.x;
 		}
@@ -88,7 +88,7 @@ public:
 		}
 	}
 
-	static double CPdist(CPoint a, CPoint b) {
+	static double CPdist(CPoint a, CPoint b) { //claculate distance between two points
 		int x, y;
 		double c;
 		x = a.x - b.x;
@@ -98,7 +98,7 @@ public:
 		return c;
 	}
 
-	static double triangleArea(CPoint a, CPoint b, CPoint c)
+	static double triangleArea(CPoint a, CPoint b, CPoint c) //calculate an area of a triangle
 	{
 		double area;
 		area = ((a.x*(b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y)) / 2.0);
@@ -106,7 +106,7 @@ public:
 		return area;
 	}
 
-	static void savePrevState(vector<MyShape*> &shapes, vector<MyShape*> &lastAction) {
+	static void savePrevState(vector<MyShape*> &shapes, vector<MyShape*> &lastAction) { //duplicate the data to a back up vector
 		MyShape *temp;		
 		int size;
 
