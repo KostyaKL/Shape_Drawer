@@ -215,7 +215,7 @@ public:
 		type = 1;
 	}
 
-	virtual MyShape *clone() { //copy of line
+	MyShape *clone() { //copy of line
 		return new MyLine(*this); //return address to a copy of self
 	}
 
@@ -235,7 +235,7 @@ public:
 		dc->SetDCPenColor(oldPen);
 	}
 
-	virtual bool isInside(CPoint point, CDC *dc) { //documentation similar to parent
+	bool isInside(CPoint point, CDC *dc) { //documentation similar to parent
 		double distance = utilityFunctions::CPdist(dots[0], dots[1]);
 		double dist0 = utilityFunctions::CPdist(dots[0], point);
 		double dist1 = utilityFunctions::CPdist(dots[1], point);
@@ -252,12 +252,12 @@ public:
 		}
 	}
 
-	virtual void offsetShape(CPoint offset) { //documentation similar to parent
+	void offsetShape(CPoint offset) { //documentation similar to parent
 		dots[0] += offset;
 		dots[1] += offset;
 	}
 
-	virtual void writeFile(fstream *myFile) { //documentatioon similar to grand parent
+	void writeFile(fstream *myFile) { //documentatioon similar to grand parent
 		myFile->write((char*)&type, sizeof(int));
 		myFile->write((char*)&dots[0].x, sizeof(int));
 		myFile->write((char*)&dots[0].y, sizeof(int));
@@ -285,7 +285,7 @@ public:
 		type = 3;
 	}
 
-	virtual MyShape *clone() { //copy of triangle
+	MyShape *clone() { //copy of triangle
 		return new MyTriangle(*this); //return address to copy of self
 	}
 
@@ -315,7 +315,7 @@ public:
 		dc->SetDCPenColor(oldPen);
 	}
 
-	virtual bool isInside(CPoint point, CDC *dc) {
+	bool isInside(CPoint point, CDC *dc) {
 		double area, area1, area2, area3;
 		//area - of triangle
 		//area1 - area of sub triangle betwin point and vertexes 1,2
@@ -341,12 +341,12 @@ public:
 		}
 	}
 
-	virtual void offsetShape(CPoint offset) { //documentation similar to parent
+	void offsetShape(CPoint offset) { //documentation similar to parent
 		dots[0] += offset;
 		dots[1] += offset;
 	}
 
-	virtual void writeFile(fstream *myFile) { //documentation similar to parent
+	void writeFile(fstream *myFile) { //documentation similar to parent
 		myFile->write((char*)&type, sizeof(int));
 		myFile->write((char*)&dots[0].x, sizeof(int));
 		myFile->write((char*)&dots[0].y, sizeof(int));
@@ -457,7 +457,7 @@ public:
 		type = 2;
 	}
 
-	virtual MyShape *clone() { //copy circle
+	MyShape *clone() { //copy circle
 		return new MyEllipse(*this); //return address to a copy of self
 	}
 
@@ -480,7 +480,7 @@ public:
 		dc->SetDCPenColor(oldPen);
 	}
 
-	virtual bool isInside(CPoint point, CDC *dc) {
+	bool isInside(CPoint point, CDC *dc) {
 		int height, width; //height - vertical radius, width - horizontal radius
 		CPoint center, f1, f2; //center - of elipse, f1 - 1st focal, f2 - 2nd focal
 		double fDist, dist1, dist2, bigRadius;
@@ -537,12 +537,12 @@ public:
 		}
 	}
 
-	virtual void offsetShape(CPoint offset) { //documentation similar to MyPolygon
+	void offsetShape(CPoint offset) { //documentation similar to MyPolygon
 		dots[0] += offset;
 		dots[1] += offset;
 	}
 
-	virtual void writeFile(fstream *myFile) { //documentation similar to MyPolygon
+	void writeFile(fstream *myFile) { //documentation similar to MyPolygon
 		myFile->write((char*)&type, sizeof(int));
 		myFile->write((char*)&dots[0].x, sizeof(int));
 		myFile->write((char*)&dots[0].y, sizeof(int));
